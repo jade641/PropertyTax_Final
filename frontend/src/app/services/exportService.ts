@@ -53,13 +53,3 @@ export async function exportUsers(): Promise<void> {
   return exportModule('/export/users', 'users.csv')
 }
 
-export default {
-  exportDashboard,
-  exportProperties,
-  exportTaxCalculations,
-  exportPayments,
-  exportCompliance,
-  exportAuditLogs,
-  exportAuditEntry,
-  exportUsers,
-}

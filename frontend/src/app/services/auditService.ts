@@ -24,7 +24,7 @@ export interface AuditLogDto {
   createdAtUtc: string
 }
 
-export class ApiRequestError extends Error {
+class ApiRequestError extends Error {
   readonly errors: string[]
 
   constructor(message: string, errors: string[] = []) {
