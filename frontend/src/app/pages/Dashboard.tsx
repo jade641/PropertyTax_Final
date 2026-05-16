@@ -14,6 +14,7 @@ import { LimitedAccessBanner } from "../components/RoleGuard";
 import { useNavigate } from "react-router";
 import { getCollectionsReport, getDelinquencyReport, getPropertiesReport, type CollectionsReportResponse, type DelinquencyReportResponse, type PropertiesReportResponse } from "../services/reportService";
 import { getComplianceStatus, type ComplianceStatusItem } from "../services/complianceService";
+import { exportDashboard } from "../services/exportService";
 import { getPaymentHistory, type PaymentDto } from "../services/paymentService";
 import { getAuditLogs, type AuditLogDto } from "../services/auditService";
 import { getProperties, type PropertyDto } from "../services/propertyService";
@@ -1124,7 +1125,14 @@ export default function Dashboard() {
                     <ArrowRight className="h-3.5 w-3.5 text-amber-400 ml-auto" />
                   </button>
                   <button
-                    onClick={() => navigate("/app/reporting")}
+                    onClick={async () => {
+                      try {
+                        await exportDashboard()
+                      } catch (err) {
+                        console.error('Export dashboard failed', err)
+                        alert('Unable to export dashboard. Please try again later.')
+                      }
+                    }}
                     className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-amber-50 transition-colors text-left border border-amber-200 hover:border-amber-300 bg-white"
                   >
                     <div className="p-1.5 rounded-md text-amber-600 bg-amber-50">

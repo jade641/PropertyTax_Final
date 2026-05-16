@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { Search, Filter, Download, Calculator, X, CheckCircle, AlertCircle, Lock, Info, Settings } from "lucide-react";
+import { exportTaxCalculations } from "../services/exportService";
 import { useAuth } from "../context/AuthContext";
 import { AccessDenied, ReadOnlyBanner, LimitedAccessBanner, PermissionGate } from "../components/RoleGuard";
 import Pagination from "../components/Pagination";
@@ -222,7 +223,17 @@ export default function TaxCalculation() {
           </p>
         </div>
         <div className="flex gap-2">
-          <button className="p-2 border border-slate-200 rounded-lg text-slate-500 hover:bg-slate-50 bg-white shadow-sm" title="Download">
+          <button
+            onClick={async () => {
+              try {
+                await exportTaxCalculations()
+              } catch (err) {
+                console.error('Export tax calculations failed', err)
+                showToast('Unable to export tax calculations. Please try again later.', 'error')
+              }
+            }}
+            className="p-2 border border-slate-200 rounded-lg text-slate-500 hover:bg-slate-50 bg-white shadow-sm" title="Download"
+          >
             <Download className="h-4 w-4" />
           </button>
           {canCreate && (

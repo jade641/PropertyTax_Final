@@ -7,6 +7,7 @@ import { useAuth } from "../context/AuthContext";
 import { AccessDenied, ReadOnlyBanner } from "../components/RoleGuard";
 import Pagination from "../components/Pagination";
 import { getApiErrorMessage, getAuditLogs, type AuditLogDto } from "../services/auditService";
+import { exportAuditLogs, exportAuditEntry } from "../services/exportService";
 
 type ActionType   = "Property Registered" | "Payment Recorded" | "Tax Rate Updated" | "User Role Change" | "Report Generated" | "Document Uploaded" | "Document Deleted" | "Login" | "Compliance Updated" | "Property Edited" | "System Event";
 type RoleType     = "Admin" | "Accountant" | "Staff" | "Auditor" | "System";
@@ -240,7 +241,17 @@ export default function Audit() {
             <button onClick={() => setView("table")}    className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${view === "table"    ? "text-white" : "text-slate-600 hover:text-slate-800"}`} style={view === "table"    ? { backgroundColor: "#0d2137" } : {}}>Table</button>
             <button onClick={() => setView("timeline")} className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${view === "timeline" ? "text-white" : "text-slate-600 hover:text-slate-800"}`} style={view === "timeline" ? { backgroundColor: "#0d2137" } : {}}>Timeline</button>
           </div>
-          <button className="px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 shadow-sm flex items-center gap-2">
+          <button
+            onClick={async () => {
+              try {
+                await exportAuditLogs()
+              } catch (err) {
+                console.error('Export audit trail failed', err)
+                alert('Unable to export audit trail. Please try again later.')
+              }
+            }}
+            className="px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 shadow-sm flex items-center gap-2"
+          >
             <Download className="h-4 w-4" /> Export Trail
           </button>
         </div>
@@ -527,7 +538,14 @@ export default function Audit() {
             </div>
             <div className="px-6 pb-6 flex gap-3">
               <button onClick={() => setSelected(null)} className="flex-1 py-2 border border-slate-200 rounded-lg text-sm text-slate-600 hover:bg-slate-50">Close</button>
-              <button className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-white rounded-lg text-sm font-medium hover:bg-slate-700">
+              <button onClick={async () => {
+                try {
+                  await exportAuditEntry(selected.id.replace(/^LOG-/, ''))
+                } catch (err) {
+                  console.error('Export audit entry failed', err)
+                  alert('Unable to export entry. Please try again later.')
+                }
+              }} className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-white rounded-lg text-sm font-medium hover:bg-slate-700">
                 <Download className="h-4 w-4" /> Export Entry
               </button>
             </div>

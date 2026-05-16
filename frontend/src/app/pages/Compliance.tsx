@@ -10,6 +10,7 @@ import { useAuth } from "../context/AuthContext";
 import { AccessDenied, ReadOnlyBanner } from "../components/RoleGuard";
 import Pagination from "../components/Pagination";
 import { getApiErrorMessage, getComplianceStatus, type ComplianceStatusItem } from "../services/complianceService";
+import { exportCompliance } from "../services/exportService";
 import {
   PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar,
   XAxis, YAxis, CartesianGrid, Tooltip,
@@ -399,7 +400,17 @@ export default function Compliance() {
               style={view === "calendar" ? { backgroundColor: "#0d2137" } : {}}>Deadlines</button>
           </div>
           {/* Export always allowed (read-only action) */}
-          <button className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 shadow-sm">
+          <button
+            onClick={async () => {
+              try {
+                await exportCompliance()
+              } catch (err) {
+                console.error('Export compliance failed', err)
+                alert('Unable to export compliance list. Please try again later.')
+              }
+            }}
+            className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 shadow-sm"
+          >
             <Download className="h-4 w-4" /> Export
           </button>
         </div>

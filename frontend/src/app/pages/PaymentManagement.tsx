@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { Plus, Search, Filter, Download, X, AlertCircle, CheckCircle, Clock, AlertTriangle, Eye, Receipt } from "lucide-react";
+import { exportPayments } from "../services/exportService";
 import { useAuth } from "../context/AuthContext";
 import { AccessDenied, ReadOnlyBanner } from "../components/RoleGuard";
 import Pagination from "../components/Pagination";
@@ -433,7 +434,17 @@ export default function PaymentManagement() {
           <p className="text-sm text-slate-500 mt-1">Record, track, and manage real property tax payments across all barangays.</p>
         </div>
         <div className="flex gap-2">
-          <button className="px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 shadow-sm flex items-center gap-2">
+          <button
+            onClick={async () => {
+              try {
+                await exportPayments()
+              } catch (err) {
+                console.error('Export payments failed', err)
+                showToast('Unable to export payments. Please try again later.', 'error')
+              }
+            }}
+            className="px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 shadow-sm flex items-center gap-2"
+          >
             <Download className="h-4 w-4" /> Export
           </button>
           {canCreate && (

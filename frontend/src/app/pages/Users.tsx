@@ -14,6 +14,7 @@ import {
   updateUser,
   type UserDto,
 } from "../services/userService";
+import { exportUsers } from "../services/exportService";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type UserStatus = "Active" | "Inactive";
@@ -348,7 +349,20 @@ export default function UsersPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <button className="px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 shadow-sm flex items-center gap-2">
+          <button
+            onClick={async () => {
+              try {
+                await exportUsers()
+              } catch (err) {
+                // keep UX light: show a simple alert on error
+                // backend should return helpful error messages
+                // Use console for diagnostics as well
+                console.error('Export users failed', err)
+                alert('Unable to export users. Please try again or contact admin.')
+              }
+            }}
+            className="px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 shadow-sm flex items-center gap-2"
+          >
             <Download className="h-4 w-4" /> Export
           </button>
           {canManageUsers && (

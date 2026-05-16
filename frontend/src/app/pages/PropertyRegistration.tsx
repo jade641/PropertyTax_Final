@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { Plus, Search, Filter, Download, Edit3, Trash2, Home, X, AlertCircle, CheckCircle, Lock, AlertTriangle, Eye, MapPin } from "lucide-react";
+import { exportProperties } from "../services/exportService";
 import { useAuth } from "../context/AuthContext";
 import { AccessDenied, ReadOnlyBanner, LimitedAccessBanner } from "../components/RoleGuard";
 import Pagination from "../components/Pagination";
@@ -540,7 +541,17 @@ export default function PropertyRegistration() {
           <p className="text-sm text-slate-500 mt-1">Manage property records, assessments, and owner information for the LGU jurisdiction.</p>
         </div>
         <div className="flex gap-2">
-          <button className="px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 shadow-sm flex items-center gap-2">
+          <button
+            onClick={async () => {
+              try {
+                await exportProperties()
+              } catch (err) {
+                console.error('Export properties failed', err)
+                showToast('Unable to export properties. Please try again later.', 'error')
+              }
+            }}
+            className="px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 shadow-sm flex items-center gap-2"
+          >
             <Download className="h-4 w-4" /> Export
           </button>
           {canCreate && (
