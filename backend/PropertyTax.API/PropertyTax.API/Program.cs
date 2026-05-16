@@ -332,6 +332,14 @@ app.MapGet("/api/db-test", async (CancellationToken cancellationToken) =>
         : Results.Json(response, statusCode: StatusCodes.Status503ServiceUnavailable);
 });
 
+app.MapGet("/", () => Results.Ok(new
+{
+    service = "PropertyTax.API",
+    status = "ok",
+    health = "/health",
+    apiBase = "/api",
+}));
+
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 
 app.MapControllers();
