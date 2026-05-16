@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { Search, Filter, Download, Calculator, X, CheckCircle, AlertCircle, Lock, Info, Settings } from "lucide-react";
-import { exportTaxCalculations } from "../services/exportService";
+import { exportCsv } from "../services/exportService";
 import { useAuth } from "../context/AuthContext";
 import { AccessDenied, ReadOnlyBanner, LimitedAccessBanner, PermissionGate } from "../components/RoleGuard";
 import Pagination from "../components/Pagination";
@@ -160,6 +160,41 @@ export default function TaxCalculation() {
     [filtered]
   );
 
+  const handleExport = () => {
+    try {
+      const headers = [
+        "Property ID",
+        "Owner Name",
+        "Barangay",
+        "Property Type",
+        "Assessed Value",
+        "Basic RPT Rate",
+        "SEF Rate",
+        "Basic Tax Due",
+        "SEF Due",
+        "Total Tax Due",
+        "Tax Year",
+      ];
+      const rows = filtered.map((r) => [
+        r.id,
+        r.ownerName,
+        r.barangay,
+        r.propertyType,
+        r.assessedValue,
+        r.basicRPTRate,
+        r.sefRate,
+        r.basicTaxDue,
+        r.sefDue,
+        r.totalTaxDue,
+        r.taxYear,
+      ]);
+      exportCsv("tax-calculations.csv", headers, rows);
+    } catch (err) {
+      console.error("Export tax calculations failed", err);
+      showToast("Unable to export tax calculations. Please try again later.", "error");
+    }
+  };
+
   if (!canView) {
     return <AccessDenied requiredRole="System Administrator, Assessment Staff, Treasury Accountant, or Internal Auditor" />;
   }
@@ -224,14 +259,7 @@ export default function TaxCalculation() {
         </div>
         <div className="flex gap-2">
           <button
-            onClick={async () => {
-              try {
-                await exportTaxCalculations()
-              } catch (err) {
-                console.error('Export tax calculations failed', err)
-                showToast('Unable to export tax calculations. Please try again later.', 'error')
-              }
-            }}
+            onClick={handleExport}
             className="p-2 border border-slate-200 rounded-lg text-slate-500 hover:bg-slate-50 bg-white shadow-sm" title="Download"
           >
             <Download className="h-4 w-4" />

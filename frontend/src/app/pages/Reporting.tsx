@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { FileText, Download, Filter, Eye, RefreshCw, FileCheck, X, Printer, MapPin, TrendingUp, Lock, ExternalLink } from "lucide-react";
+import { FileText, Filter, Eye, RefreshCw, FileCheck, X, Printer, MapPin, TrendingUp, Lock, ExternalLink } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { AccessDenied, ReadOnlyBanner } from "../components/RoleGuard";
 import { getApiErrorMessage, getCollectionsReport, getDelinquencyReport, getPropertiesReport, type CollectionsReportResponse, type DelinquencyReportResponse, type PropertiesReportResponse } from "../services/reportService";
@@ -132,7 +132,6 @@ export default function Reporting() {
 
   const canGenerate = can("reporting.generate");
   const canSubmit   = can("reporting.submit");
-  const canExport   = can("reporting.export");
   const isReadOnly  = !canGenerate && !canSubmit;
 
   const fetchReports = () => Promise.all([getCollectionsReport(), getDelinquencyReport(), getPropertiesReport()]);
@@ -258,7 +257,7 @@ export default function Reporting() {
       </div>
 
       {isReadOnly && (
-        <ReadOnlyBanner message={`Read-Only Mode — ${user?.role} accounts can view and export reports but cannot generate or publish new filings.`} />
+        <ReadOnlyBanner message={`Read-Only Mode — ${user?.role} accounts can view reports but cannot generate or publish new filings.`} />
       )}
 
       {errorMessage && (
@@ -416,11 +415,6 @@ export default function Reporting() {
                       <button onClick={() => setPreviewReport(report)} className="p-1.5 text-slate-500 hover:text-blue-600 bg-slate-100 hover:bg-blue-50 rounded-md transition-colors" title="Preview">
                         <Eye className="h-3.5 w-3.5" />
                       </button>
-                      {canExport && (
-                        <button className="p-1.5 text-slate-500 hover:text-emerald-600 bg-slate-100 hover:bg-emerald-50 rounded-md transition-colors" title="Export PDF">
-                          <Download className="h-3.5 w-3.5" />
-                        </button>
-                      )}
                       {canSubmit && report.status === "Draft" && (
                         <button className="px-2.5 py-1 bg-blue-600 text-white border border-blue-600 text-xs rounded-md font-medium hover:bg-blue-700 transition-colors">
                           Submit
@@ -440,7 +434,7 @@ export default function Reporting() {
         {isReadOnly && (
           <div className="px-5 py-2.5 border-t border-amber-100 bg-amber-50/50 flex items-center gap-2 text-xs text-amber-700">
             <Eye className="h-3.5 w-3.5 flex-shrink-0" />
-            View and export access only. Generating and submitting reports requires Accountant or Admin access.
+            View-only access. Generating and submitting reports requires Accountant or Admin access.
           </div>
         )}
       </div>
@@ -458,12 +452,6 @@ export default function Reporting() {
                 <button className="px-3 py-1.5 border border-slate-200 rounded-lg text-sm text-slate-600 hover:bg-slate-100 flex items-center gap-1.5">
                   <Printer className="h-3.5 w-3.5" /> Print
                 </button>
-                {canExport && (
-                  <button className="px-3 py-1.5 text-white rounded-lg text-sm font-medium flex items-center gap-1.5"
-                    style={{ backgroundColor: "#0d2137" }}>
-                    <Download className="h-3.5 w-3.5" /> Export PDF
-                  </button>
-                )}
                 <button onClick={() => setPreviewReport(null)} className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg">
                   <X className="h-4 w-4" />
                 </button>

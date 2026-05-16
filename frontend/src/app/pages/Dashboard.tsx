@@ -14,7 +14,6 @@ import { LimitedAccessBanner } from "../components/RoleGuard";
 import { useNavigate } from "react-router";
 import { getCollectionsReport, getDelinquencyReport, getPropertiesReport, type CollectionsReportResponse, type DelinquencyReportResponse, type PropertiesReportResponse } from "../services/reportService";
 import { getComplianceStatus, type ComplianceStatusItem } from "../services/complianceService";
-import { exportDashboard } from "../services/exportService";
 import { getPaymentHistory, type PaymentDto } from "../services/paymentService";
 import { getAuditLogs, type AuditLogDto } from "../services/auditService";
 import { getProperties, type PropertyDto } from "../services/propertyService";
@@ -235,7 +234,6 @@ export default function Dashboard() {
   const canViewAudit = can("audit.view");
   const canViewFiling = can("filing.view");
   const canCreatePayments = can("payment.create");
-  const canExportDashboard = can("reporting.export");
   const today = new Date().toLocaleDateString("en-PH", {
     weekday: "long", year: "numeric", month: "long", day: "numeric",
   });
@@ -588,11 +586,6 @@ export default function Dashboard() {
           </p>
         </div>
         <div className="flex gap-2">
-          {canExportDashboard && (
-            <button className="px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors shadow-sm">
-              Export Report
-            </button>
-          )}
           {canRegisterProperty && (
             <button
               onClick={() => navigate("/app/property-registration")}
@@ -1122,23 +1115,6 @@ export default function Dashboard() {
                       <ClipboardList className="h-3.5 w-3.5" />
                     </div>
                     <span className="text-sm text-slate-700 font-medium">View Audit Trail</span>
-                    <ArrowRight className="h-3.5 w-3.5 text-amber-400 ml-auto" />
-                  </button>
-                  <button
-                    onClick={async () => {
-                      try {
-                        await exportDashboard()
-                      } catch (err) {
-                        console.error('Export dashboard failed', err)
-                        alert('Unable to export dashboard. Please try again later.')
-                      }
-                    }}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-amber-50 transition-colors text-left border border-amber-200 hover:border-amber-300 bg-white"
-                  >
-                    <div className="p-1.5 rounded-md text-amber-600 bg-amber-50">
-                      <FileDown className="h-3.5 w-3.5" />
-                    </div>
-                    <span className="text-sm text-slate-700 font-medium">Export Report</span>
                     <ArrowRight className="h-3.5 w-3.5 text-amber-400 ml-auto" />
                   </button>
                   <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-50 transition-colors text-left border border-slate-100 hover:border-slate-200">

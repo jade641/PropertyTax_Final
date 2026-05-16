@@ -1,11 +1,33 @@
-import api from './api'
+type CsvCell = string | number | boolean | null | undefined
 
-async function downloadBlob(response: any, defaultName: string) {
-  const blob = response.data
-  const contentDisposition = response.headers['content-disposition'] ?? ''
-  const match = /filename\*=UTF-8''(.+)$/.exec(contentDisposition) || /filename="?([^";]+)"?/.exec(contentDisposition)
-  const filename = match ? decodeURIComponent(match[1]) : defaultName
+export type CsvRow = CsvCell[]
 
+function escapeCsvCell(value: CsvCell): string {
+  if (value === null || value === undefined) {
+    return ''
+  }
+
+  const stringValue = String(value)
+
+  if (/[",\r\n]/.test(stringValue)) {
+    return `"${stringValue.replace(/"/g, '""')}"`
+  }
+
+  return stringValue
+}
+
+function buildCsv(headers: string[], rows: CsvRow[]): string {
+  const lines = [headers.map(escapeCsvCell).join(',')]
+
+  rows.forEach((row) => {
+    lines.push(row.map(escapeCsvCell).join(','))
+  })
+
+  return lines.join('\r\n')
+}
+
+function downloadTextFile(filename: string, content: string, mimeType = 'text/csv;charset=utf-8') {
+  const blob = new Blob([content], { type: mimeType })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
@@ -16,40 +38,8 @@ async function downloadBlob(response: any, defaultName: string) {
   URL.revokeObjectURL(url)
 }
 
-async function exportModule(path: string, defaultName: string) {
-  const response = await api.get(path, { responseType: 'blob' })
-  await downloadBlob(response, defaultName)
-}
-
-export async function exportDashboard(): Promise<void> {
-  return exportModule('/export/dashboard', 'dashboard-report.csv')
-}
-
-export async function exportProperties(): Promise<void> {
-  return exportModule('/export/properties', 'properties.csv')
-}
-
-export async function exportTaxCalculations(): Promise<void> {
-  return exportModule('/export/tax-calculations', 'tax-calculations.xlsx')
-}
-
-export async function exportPayments(): Promise<void> {
-  return exportModule('/export/payments', 'payments.csv')
-}
-
-export async function exportCompliance(): Promise<void> {
-  return exportModule('/export/compliance', 'compliance.csv')
-}
-
-export async function exportAuditLogs(): Promise<void> {
-  return exportModule('/export/audit-logs', 'audit-logs.csv')
-}
-
-export async function exportAuditEntry(id: string | number): Promise<void> {
-  return exportModule(`/export/audit-logs/${id}`, `audit-log-${id}.csv`)
-}
-
-export async function exportUsers(): Promise<void> {
-  return exportModule('/export/users', 'users.csv')
+export function exportCsv(filename: string, headers: string[], rows: CsvRow[]): void {
+  const csv = buildCsv(headers, rows)
+  downloadTextFile(filename, csv)
 }
 

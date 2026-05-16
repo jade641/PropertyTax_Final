@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { Plus, Search, Filter, Download, Edit3, Trash2, Home, X, AlertCircle, CheckCircle, Lock, AlertTriangle, Eye, MapPin } from "lucide-react";
-import { exportProperties } from "../services/exportService";
+import { exportCsv } from "../services/exportService";
 import { useAuth } from "../context/AuthContext";
 import { AccessDenied, ReadOnlyBanner, LimitedAccessBanner } from "../components/RoleGuard";
 import Pagination from "../components/Pagination";
@@ -347,6 +347,55 @@ export default function PropertyRegistration() {
     anomalies: properties.filter((p) => p.anomaly).length,
   }), [properties]);
 
+  const handleExport = () => {
+    try {
+      const headers = [
+        "Property ID",
+        "Owner Name",
+        "Owner Email",
+        "Owner Phone",
+        "Owner Address",
+        "Tax ID",
+        "Barangay",
+        "Municipality",
+        "Property Type",
+        "Lot Number",
+        "Area (sqm)",
+        "Market Value",
+        "Assessed Value",
+        "Status",
+        "Date Registered",
+        "Tax Declaration No",
+        "Zoning Classification",
+        "Remarks",
+      ];
+      const rows = filtered.map((p) => [
+        p.id,
+        p.ownerName,
+        p.ownerEmail ?? "",
+        p.ownerPhone ?? "",
+        p.ownerAddress ?? "",
+        p.taxIdentificationNumber ?? "",
+        p.barangay,
+        p.municipality,
+        p.propertyType,
+        p.lotNumber,
+        p.areaSqm,
+        p.marketValue,
+        p.assessedValue,
+        p.status,
+        p.dateRegistered,
+        p.taxDeclarationNumber ?? "",
+        p.zoningClassification ?? "",
+        p.remarks ?? "",
+      ]);
+      exportCsv("properties.csv", headers, rows);
+    } catch (err) {
+      console.error("Export properties failed", err);
+      showToast("Unable to export properties. Please try again later.", "error");
+    }
+  };
+
   const computeAssessed = (marketValue: number, type: PropertyType) => {
     return marketValue * (ASSESSMENT_LEVELS[type] / 100);
   };
@@ -542,14 +591,7 @@ export default function PropertyRegistration() {
         </div>
         <div className="flex gap-2">
           <button
-            onClick={async () => {
-              try {
-                await exportProperties()
-              } catch (err) {
-                console.error('Export properties failed', err)
-                showToast('Unable to export properties. Please try again later.', 'error')
-              }
-            }}
+            onClick={handleExport}
             className="px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 shadow-sm flex items-center gap-2"
           >
             <Download className="h-4 w-4" /> Export

@@ -10,7 +10,7 @@ import { useAuth } from "../context/AuthContext";
 import { AccessDenied, ReadOnlyBanner } from "../components/RoleGuard";
 import Pagination from "../components/Pagination";
 import { getApiErrorMessage, getComplianceStatus, type ComplianceStatusItem } from "../services/complianceService";
-import { exportCompliance } from "../services/exportService";
+import { exportCsv } from "../services/exportService";
 import {
   PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar,
   XAxis, YAxis, CartesianGrid, Tooltip,
@@ -261,9 +261,6 @@ function AuditorSummaryCharts({ counts, taxpayers, barangaySummary }: {
               Notices must be dispatched immediately per LGC §255.
             </p>
           </div>
-          <button className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-red-100 text-red-700 border border-red-300 rounded-lg text-xs font-medium hover:bg-red-200 transition-colors">
-            <Download className="h-3.5 w-3.5" /> Export List
-          </button>
         </div>
       )}
     </div>
@@ -369,6 +366,37 @@ export default function Compliance() {
       .slice(0, 8);
   }, [taxpayers]);
 
+  const handleExport = () => {
+    try {
+      const headers = [
+        "Property ID",
+        "Owner Name",
+        "Barangay",
+        "Property Type",
+        "Tax Year",
+        "Total Due",
+        "Total Paid",
+        "Last Payment Date",
+        "Status",
+      ];
+      const rows = filtered.map((t) => [
+        t.propertyId,
+        t.ownerName,
+        t.barangay,
+        t.propertyType,
+        t.taxYear,
+        t.totalDue,
+        t.totalPaid,
+        t.lastPaymentDate ?? "",
+        t.status,
+      ]);
+      exportCsv("compliance.csv", headers, rows);
+    } catch (err) {
+      console.error("Export compliance failed", err);
+      alert("Unable to export compliance list. Please try again later.");
+    }
+  };
+
   if (!canView) {
     return <AccessDenied requiredRole="System Administrator, Treasury Accountant, or Internal Auditor" />;
   }
@@ -401,14 +429,7 @@ export default function Compliance() {
           </div>
           {/* Export always allowed (read-only action) */}
           <button
-            onClick={async () => {
-              try {
-                await exportCompliance()
-              } catch (err) {
-                console.error('Export compliance failed', err)
-                alert('Unable to export compliance list. Please try again later.')
-              }
-            }}
+            onClick={handleExport}
             className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 shadow-sm"
           >
             <Download className="h-4 w-4" /> Export

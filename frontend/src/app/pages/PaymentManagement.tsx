@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { Plus, Search, Filter, Download, X, AlertCircle, CheckCircle, Clock, AlertTriangle, Eye, Receipt } from "lucide-react";
-import { exportPayments } from "../services/exportService";
+import { exportCsv } from "../services/exportService";
 import { useAuth } from "../context/AuthContext";
 import { AccessDenied, ReadOnlyBanner } from "../components/RoleGuard";
 import Pagination from "../components/Pagination";
@@ -353,6 +353,51 @@ export default function PaymentManagement() {
     return Array.from(totalsByMonth, ([month, collected]) => ({ month, collected }));
   }, [payments]);
 
+  const handleExport = () => {
+    try {
+      const headers = [
+        "Payment ID",
+        "OR Number",
+        "Owner Name",
+        "Property ID",
+        "Barangay",
+        "Tax Year",
+        "Quarter",
+        "Amount Due",
+        "Amount Paid",
+        "Payment Date",
+        "Due Date",
+        "Status",
+        "Payment Method",
+        "Reference Number",
+        "Bank Name",
+        "Penalty",
+      ];
+      const rows = filtered.map((pay) => [
+        pay.id,
+        pay.orNumber ?? "",
+        pay.ownerName,
+        pay.propertyId,
+        pay.barangay,
+        pay.taxYear,
+        pay.quarter,
+        pay.amountDue,
+        pay.amountPaid,
+        pay.paymentDate ?? "",
+        pay.dueDate,
+        pay.status,
+        pay.method ?? "",
+        pay.referenceNumber ?? "",
+        pay.bankName ?? "",
+        pay.penalty,
+      ]);
+      exportCsv("payments.csv", headers, rows);
+    } catch (err) {
+      console.error("Export payments failed", err);
+      showToast("Unable to export payments. Please try again later.", "error");
+    }
+  };
+
   const handleSave = async () => {
     if (!form.propertyId || !form.amountPaid || !form.paymentDate) {
       showToast("Please fill in all required fields.", "error"); return;
@@ -435,14 +480,7 @@ export default function PaymentManagement() {
         </div>
         <div className="flex gap-2">
           <button
-            onClick={async () => {
-              try {
-                await exportPayments()
-              } catch (err) {
-                console.error('Export payments failed', err)
-                showToast('Unable to export payments. Please try again later.', 'error')
-              }
-            }}
+            onClick={handleExport}
             className="px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 shadow-sm flex items-center gap-2"
           >
             <Download className="h-4 w-4" /> Export
